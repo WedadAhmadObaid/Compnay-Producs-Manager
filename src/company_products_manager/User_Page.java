@@ -1,0 +1,415 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package company_products_manager;
+import java.awt.*;
+import javax.swing.*;
+import com.toedter.calendar.JDateChooser;
+import java.awt.event.*;
+import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
+
+/**
+ *
+ * @author Eng. Wedad Obaid
+ */
+public class User_Page extends JFrame implements DBInfo, ActionListener {
+
+    JPanel panel;
+    JLabel image, idLabel, nameLabel, priceLabel, dateLabel, searchLabel, moveFastLabel;
+    JTextField idField, nameField, priceField, searchField;
+    JDateChooser dateField;
+    JButton exitButton, selectFirstButton, selectNextButton, selectPreviousButton, selectLastButton;
+    JTable table;
+    JScrollPane tableScroller;
+    DefaultTableModel model;
+
+
+
+    public User_Page() {
+        createAndShowGUI();
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new User_Page();
+            }
+        });
+    }
+
+    private void createAndShowGUI() {
+
+        try {
+            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException | IllegalAccessException | InstantiationException | UnsupportedLookAndFeelException ex) {
+        }
+
+        panel = new JPanel(null);
+        model = new DefaultTableModel();
+        table = new JTable(model);
+        tableScroller = new JScrollPane(table);
+        image = new JLabel();
+        idLabel = new JLabel("ID");
+        nameLabel = new JLabel("Name");
+        priceLabel = new JLabel("Price");
+        dateLabel = new JLabel("Date");
+        searchLabel = new JLabel();
+        moveFastLabel = new JLabel("Move Fast", JLabel.CENTER);
+        idField = new JTextField();
+        nameField = new JTextField();
+        priceField = new JTextField();
+        dateField = new JDateChooser();
+        searchField = new JTextField();
+        searchLabel = new JLabel("Search");
+        selectFirstButton = new JButton("First", new ImageIcon(this.getClass().getResource("/images/first.png")));
+        selectLastButton = new JButton("Last", new ImageIcon(this.getClass().getResource("/images/last.png")));
+        selectNextButton = new JButton("Next", new ImageIcon(this.getClass().getResource("/images/next.png")));
+        selectPreviousButton = new JButton("Previous", new ImageIcon(this.getClass().getResource("/images/previous.png")));
+        exitButton = new JButton("Exit", new ImageIcon(this.getClass().getResource("/images/exit.png")));
+
+        image.setBounds(80, 41, 270, 250);
+        idLabel.setBounds(20, 355, 50, 40);
+        idField.setBounds(80, 355, 270, 40);
+        nameLabel.setBounds(20, 405, 50, 40);
+        nameField.setBounds(80, 405, 270, 40);
+        priceLabel.setBounds(20, 455, 50, 40);
+        priceField.setBounds(80, 455, 270, 40);
+        dateLabel.setBounds(20, 505, 50, 40);
+        dateField.setBounds(80, 505, 270, 40);
+        tableScroller.setBounds(377, 40, 520, 505);
+        searchField.setBounds(530, 577, 255, 36);
+        searchLabel.setBounds(460, 575, 115, 40);
+        moveFastLabel.setBounds(890, 150, 190, 30);
+        selectFirstButton.setBounds(920, 200, 130, 40);
+        selectLastButton.setBounds(920, 250, 130, 40);
+        selectNextButton.setBounds(920, 300, 130, 40);
+        selectPreviousButton.setBounds(920, 350, 130, 40);
+        exitButton.setBounds(920, 575, 130, 40);
+
+        idLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        idField.setFont(new Font("Arial", Font.BOLD, 15));
+        nameLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        nameField.setFont(new Font("Arial", Font.BOLD, 15));
+        priceLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        priceField.setFont(new Font("Arial", Font.BOLD, 15));
+        dateLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        dateField.setFont(new Font("Arial", Font.BOLD, 13));
+        searchField.setFont(new Font("Arial", Font.BOLD, 15));
+        searchLabel.setFont(new Font("Arial", Font.BOLD, 17));
+        moveFastLabel.setFont(new Font("Arial", Font.BOLD, 22));
+        selectFirstButton.setFont(new Font("Arial", Font.BOLD, 16));
+        selectLastButton.setFont(new Font("Arial", Font.BOLD, 16));
+        selectNextButton.setFont(new Font("Arial", Font.BOLD, 16));
+        selectPreviousButton.setFont(new Font("Arial", Font.BOLD, 16));
+        exitButton.setFont(new Font("Arial", Font.BOLD, 16));
+
+        image.setBorder(BorderFactory.createLineBorder(Color.gray, 1, true));
+        idField.setBorder(BorderFactory.createLineBorder(Color.gray, 2, true));
+        nameField.setBorder(BorderFactory.createLineBorder(Color.gray, 2, true));
+        priceField.setBorder(BorderFactory.createLineBorder(Color.gray, 2, true));
+        searchField.setBorder(BorderFactory.createLineBorder(Color.gray, 2, true));
+
+        idField.setEditable(false);
+        idField.setBackground(new Color(240, 240, 240));
+
+        dateField.setDateFormatString("yyyy-MM-dd");
+        dateField.setBackground(Color.gray);
+        dateField.getCalendarButton().setIcon(new ImageIcon(this.getClass().getResource("/images/calendar.png")));
+        dateField.getCalendarButton().setBackground(Color.gray);
+        table.setColumnSelectionAllowed(false);
+        table.getParent().setBackground(Color.white);
+        tableScroller.setViewportView(table);
+
+        model.addColumn("ID");
+        model.addColumn("Name");
+        model.addColumn("Price ($)");
+        model.addColumn("Date Of Add");
+
+        try {
+            viewProductsInTheTable();
+        } catch (Exception e) {
+        }
+
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent evt) {
+                int index = table.getSelectedRow();
+                showProduct(index);
+            }
+        });
+
+        table.addKeyListener(new KeyListener() {
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_DOWN) {
+                    showProduct(table.getSelectedRow());
+                }
+            }
+
+            @Override
+            public void keyTyped(KeyEvent e) {
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+            }
+
+        });
+
+        searchField.addKeyListener(new KeyListener() {
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                search();
+            }
+
+            @Override
+            public void keyTyped(KeyEvent e) {
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+            }
+
+        });
+
+        selectFirstButton.addActionListener(this);
+        selectLastButton.addActionListener(this);
+        selectNextButton.addActionListener(this);
+        selectPreviousButton.addActionListener(this);
+        exitButton.addActionListener(this);
+
+        panel.add(image);
+        panel.add(idLabel);
+        panel.add(idField);
+        panel.add(idField);
+        panel.add(nameLabel);
+        panel.add(nameField);
+        panel.add(priceLabel);
+        panel.add(priceField);
+        panel.add(dateLabel);
+        panel.add(dateField);
+        panel.add(tableScroller);
+        panel.add(searchField);
+        panel.add(searchLabel);
+        panel.add(moveFastLabel);
+        panel.add(selectFirstButton);
+        panel.add(selectLastButton);
+        panel.add(selectNextButton);
+        panel.add(selectPreviousButton);
+        panel.add(exitButton);
+
+        showFirstProduct();
+
+        panel.setPreferredSize(new Dimension(1070, 640));
+        panel.setMinimumSize(new Dimension(1070, 640));
+
+        setContentPane(new JPanel(new GridBagLayout()));
+
+        add(panel);
+
+        setTitle("Company Products Manager");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        pack();
+        setLocationRelativeTo(null);
+        setVisible(true);
+    }
+
+    private Connection getConnection() {
+        Connection con;
+
+        try {
+            con = DriverManager.getConnection(DBInfo.DB_NAME_WITH_ENCODING, DBInfo.USER, DBInfo.PASSWORD);
+            return con;
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Connection Error", JOptionPane.ERROR_MESSAGE);
+            return null;
+        }
+    }
+
+    private void viewProductsInTheTable() {
+        ArrayList<Product> productList = new ArrayList();
+
+        Connection con = getConnection();
+        String query = "SELECT * FROM products";
+
+        Statement st;
+        ResultSet rs;
+
+        try {
+            st = con.createStatement();
+            rs = st.executeQuery(query);
+
+            Product product;
+
+            while (rs.next()) {
+                product = new Product(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        Float.parseFloat(rs.getString("price")),
+                        rs.getString("add_date"),
+                        rs.getBytes("image")
+                );
+                productList.add(product);
+            }
+
+            con.close();
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
+        model.setRowCount(0);
+
+        Object[] row = new Object[4];
+
+        for (int i = 0; i < productList.size(); i++) {
+            row[0] = productList.get(i).getId();
+            row[1] = productList.get(i).getName();
+            row[2] = productList.get(i).getPrice();
+            row[3] = productList.get(i).getAddDate();
+
+            model.addRow(row);
+        }
+
+    }
+
+
+    private ImageIcon resizeImage(byte[] pic) {
+        ImageIcon myImage;
+
+        if (pic == null) {
+            myImage = new ImageIcon(this.getClass().getResource("/images/no-image.jpg"));
+        } else {
+            myImage = new ImageIcon(pic);
+        }
+
+        Image tempImage = myImage.getImage().getScaledInstance(image.getWidth(), image.getHeight(), Image.SCALE_SMOOTH);
+
+        return new ImageIcon(tempImage);
+    }
+
+
+
+
+    private ArrayList<Product> getProductList() {
+        ArrayList<Product> productList = new ArrayList();
+        Connection con = getConnection();
+        String query = "SELECT * FROM products";
+
+        Statement st;
+        ResultSet rs;
+
+        try {
+
+            st = con.createStatement();
+            rs = st.executeQuery(query);
+            Product product;
+
+            while (rs.next()) {
+                product = new Product(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        Float.parseFloat(rs.getString("price")),
+                        rs.getString("add_date"),
+                        rs.getBytes("image")
+                );
+                productList.add(product);
+            }
+
+            con.close();
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
+        return productList;
+    }
+
+    private void showProduct(int index) {
+        idField.setText(Integer.toString(getProductList().get(index).getId()));
+        nameField.setText(getProductList().get(index).getName());
+        priceField.setText(Float.toString(getProductList().get(index).getPrice()));
+
+        try {
+            Date addDate = new SimpleDateFormat("yyyy-MM-dd").parse((String) getProductList().get(index).getAddDate());
+               dateField.setDate(addDate);
+        } catch (ParseException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
+        byte[] theImage = getProductList().get(index).getImage();
+
+        image.setIcon(resizeImage(theImage));
+    }
+
+
+    private void showFirstProduct() {
+        if (table.getRowCount() != 0) {
+            table.setRowSelectionInterval(0, 0);
+            showProduct(0);
+        }
+    }
+
+    private void showLastProduct() {
+        if (table.getRowCount() != 0) {
+            table.setRowSelectionInterval(table.getRowCount() - 1, table.getRowCount() - 1);
+            showProduct(table.getRowCount() - 1);
+        }
+    }
+
+    private void showNextProdut() {
+        if (table.getSelectedRow() < table.getRowCount() - 1) {
+            int currentSelectedRow = table.getSelectedRow() + 1;
+            table.setRowSelectionInterval(currentSelectedRow, currentSelectedRow);
+            showProduct(currentSelectedRow);
+        }
+    }
+
+    private void showPreviousProduct() {
+        if (table.getSelectedRow() > 0) {
+            int currentSelectedRow = table.getSelectedRow() - 1;
+            table.setRowSelectionInterval(currentSelectedRow, currentSelectedRow);
+            showProduct(currentSelectedRow);
+        }
+    }
+
+    private void search() {
+        String keyword = searchField.getText();
+        TableRowSorter<DefaultTableModel> tr = new TableRowSorter<>(model);
+        table.setRowSorter(tr);
+
+        tr.setRowFilter(RowFilter.regexFilter(keyword));
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+
+        if (e.getSource() == selectFirstButton) {
+            showFirstProduct();
+        } else if (e.getSource() == selectLastButton) {
+            showLastProduct();
+        } else if (e.getSource() == selectNextButton) {
+            showNextProdut();
+        } else if (e.getSource() == selectPreviousButton) {
+            showPreviousProduct();
+        } else if (e.getSource() == exitButton) {
+            System.exit(0);
+        }
+
+    }
+
+}
+
